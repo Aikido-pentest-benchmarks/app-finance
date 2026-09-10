@@ -23,9 +23,8 @@ class TransactionLog extends AbstractStorage implements InterfaceStorage {
 
   static void save(dynamic content) {
     String line = content.toString();
-    if (EncryptionHandler.doEncrypt()) {
-      line = EncryptionHandler.encrypt(line);
-    }
+    // Always encrypt financial data for security
+    line = EncryptionHandler.encrypt(line);
     saveRaw(line);
     amount++;
   }
@@ -38,11 +37,11 @@ class TransactionLog extends AbstractStorage implements InterfaceStorage {
   }
 
   static Future<bool> load(AppData store) async {
-    bool isEncrypted = EncryptionHandler.doEncrypt();
     bool isOK = true;
     amount = 0;
     await for (var line in read()) {
-      isOK &= add(store, line, isEncrypted);
+      // All data is now encrypted
+      isOK &= add(store, line, true);
       amount++;
     }
     return isOK;

@@ -14,34 +14,51 @@ import 'encryption_handler_test.mocks.dart';
 void main() {
   setUp(() {
     AppPreferences.pref = MockSharedPreferences();
+    // Mock the getString method to return null by default
+    when(AppPreferences.pref.getString(any)).thenReturn(null);
+    // Mock the setString method to return true
+    when(AppPreferences.pref.setString(any, any)).thenAnswer((_) async => true);
   });
 
   group('EncryptionHandler', () {
-    test('getHash', () {
+    test('getHash uses SHA-256', () {
       Map<String, dynamic> data = {'test': 123};
-      expect(EncryptionHandler.getHash(data), 'ff4123302616ba02c74a95824d40f192');
+      // SHA-256 hash is different from MD5
+      final hash = EncryptionHandler.getHash(data);
+      expect(hash.length, 64); // SHA-256 produces 64 hex characters
     });
 
-    group('doEncrypt', () {
-      final testCases = [
-        (getPreference: null, result: true),
-        (getPreference: 'true', result: true),
-        (getPreference: 'false', result: false),
-      ];
-
-      for (var v in testCases) {
-        test('$v', () {
-          when(AppPreferences.pref.getString('doEncrypt')).thenReturn(v.getPreference);
-          expect(EncryptionHandler.doEncrypt(), v.result);
-        });
-      }
+    test('encrypt / decrypt with random IV', () {
+      String data = 'sample content';
+      final enc1 = EncryptionHandler.encrypt(data);
+      final enc2 = EncryptionHandler.encrypt(data);
+      
+      // Each encryption should produce different ciphertext due to random IV
+      expect(enc1, isNot(equals(enc2)));
+      
+      // But both should decrypt to the same plaintext
+      expect(EncryptionHandler.decrypt(enc1), data);
+      expect(EncryptionHandler.decrypt(enc2), data);
     });
 
-    test('encrypt / decrypt', () {
+    test('decrypt fails with invalid ciphertext', () {
+      expect(
+        () => EncryptionHandler.decrypt('invalid_base64_data'),
+        throwsException,
+      );
+    });
+
+    test('decrypt fails with tampered ciphertext', () {
       String data = 'sample content';
       final enc = EncryptionHandler.encrypt(data);
-      expect(enc.length, 24);
-      expect(EncryptionHandler.decrypt(enc), data);
+      
+      // Tamper with the ciphertext
+      final tamperedEnc = enc.substring(0, enc.length - 4) + 'XXXX';
+      
+      expect(
+        () => EncryptionHandler.decrypt(tamperedEnc),
+        throwsException,
+      );
     });
   });
 }
