@@ -59,8 +59,6 @@ class SettingTabState<T extends SettingTab> extends AbstractTabState<T> {
   late AppBudgetPositive budgetPositive;
 
   Currency? currency;
-  bool isEncrypted = false;
-  bool hasEncrypted = false;
   String brightness = '0';
   String colorMode = AppPalette.state;
 
@@ -75,10 +73,7 @@ class SettingTabState<T extends SettingTab> extends AbstractTabState<T> {
   void initState() {
     super.initState();
     controller = FocusController();
-    final doEncrypt = AppPreferences.get(AppPreferences.prefDoEncrypt);
-    hasEncrypted = doEncrypt != null;
-    isEncrypted = doEncrypt == 'true' || doEncrypt == null;
-    AppPreferences.set(AppPreferences.prefDoEncrypt, isEncrypted ? 'true' : 'false');
+    // Encryption is now always enabled for security
     brightness = AppPreferences.get(AppPreferences.prefTheme) ?? brightness;
     colorMode = AppPreferences.get(AppPreferences.prefColor) ?? colorMode;
     currency = CurrencyProvider.find(AppPreferences.get(AppPreferences.prefCurrency) ?? '');
@@ -88,14 +83,6 @@ class SettingTabState<T extends SettingTab> extends AbstractTabState<T> {
   void dispose() {
     controller.dispose();
     super.dispose();
-  }
-
-  void saveEncryption(newValue) {
-    if (hasEncrypted) {
-      return;
-    }
-    setState(() => isEncrypted = newValue);
-    AppPreferences.set(AppPreferences.prefDoEncrypt, isEncrypted ? 'true' : 'false');
   }
 
   Future<void> saveCurrency(Currency? value) async {
@@ -264,25 +251,6 @@ class SettingTabState<T extends SettingTab> extends AbstractTabState<T> {
               state.updateTotals([AppDataType.budgets]);
             },
           ),
-          if (kDebugMode) ...[
-            Row(
-              mainAxisAlignment: AppDesign.getAlignment<MainAxisAlignment>(),
-              children: [
-                Text(
-                  AppLocale.labels.encryptionMode,
-                  style: textTheme.bodyLarge,
-                ),
-                Switch(
-                  value: isEncrypted,
-                  onChanged: saveEncryption,
-                ),
-                Expanded(
-                  child: hasEncrypted ? Text(AppLocale.labels.hasEncrypted) : ThemeHelper.emptyBox,
-                ),
-              ],
-            ),
-            ThemeHelper.hIndent2x,
-          ],
           InputWrapper.select(
             title: AppLocale.labels.brightnessTheme,
             value: brightness,
