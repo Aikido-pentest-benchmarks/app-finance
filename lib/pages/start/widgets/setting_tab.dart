@@ -75,10 +75,11 @@ class SettingTabState<T extends SettingTab> extends AbstractTabState<T> {
   void initState() {
     super.initState();
     controller = FocusController();
+    // Encryption is now mandatory for security - always set to true
     final doEncrypt = AppPreferences.get(AppPreferences.prefDoEncrypt);
     hasEncrypted = doEncrypt != null;
-    isEncrypted = doEncrypt == 'true' || doEncrypt == null;
-    AppPreferences.set(AppPreferences.prefDoEncrypt, isEncrypted ? 'true' : 'false');
+    isEncrypted = true; // Always encrypted
+    AppPreferences.set(AppPreferences.prefDoEncrypt, 'true');
     brightness = AppPreferences.get(AppPreferences.prefTheme) ?? brightness;
     colorMode = AppPreferences.get(AppPreferences.prefColor) ?? colorMode;
     currency = CurrencyProvider.find(AppPreferences.get(AppPreferences.prefCurrency) ?? '');
@@ -91,11 +92,8 @@ class SettingTabState<T extends SettingTab> extends AbstractTabState<T> {
   }
 
   void saveEncryption(newValue) {
-    if (hasEncrypted) {
-      return;
-    }
-    setState(() => isEncrypted = newValue);
-    AppPreferences.set(AppPreferences.prefDoEncrypt, isEncrypted ? 'true' : 'false');
+    // Encryption is now mandatory - do not allow changes
+    return;
   }
 
   Future<void> saveCurrency(Currency? value) async {

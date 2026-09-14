@@ -3,6 +3,7 @@
 
 import 'dart:async';
 
+import 'package:app_finance/_classes/controller/encryption_handler.dart';
 import 'package:app_finance/_classes/controller/fallback_localization_delegate.dart';
 import 'package:app_finance/_classes/herald/app_budget_positive.dart';
 import 'package:app_finance/_classes/herald/app_design.dart';
@@ -101,6 +102,8 @@ void main() async {
     }
     AppPreferences.pref = await SharedPreferences.getInstance();
     CurrencyDefaults.cache = AppPreferences.pref;
+    // Initialize encryption with per-installation key
+    await EncryptionHandler.initialize();
     final appSync = AppSync();
     runApp(
       MultiProvider(
