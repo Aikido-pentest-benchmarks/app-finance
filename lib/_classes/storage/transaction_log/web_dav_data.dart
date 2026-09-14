@@ -6,12 +6,14 @@ class WebDavData {
   final String username;
   final String password;
   final String path;
+  final bool isEncrypted;
 
   WebDavData({
     required this.link,
     required this.username,
     required this.password,
     this.path = 'tmp.log',
+    this.isEncrypted = true,
   });
 
   bool isEmpty() => username.isEmpty || link.isEmpty || password.isEmpty || path.isEmpty;

@@ -22,13 +22,13 @@ class FileProtocol extends AbstractProtocol with FileImportMixin, FileExportMixi
   });
 
   @override
-  Future<void> save(dynamic data) async {
+  Future<void> save(dynamic data, [bool isEncrypted = true]) async {
     if (data.isEmpty) {
       callbackMessage(message = AppLocale.labels.isRequired);
       return;
     }
     callbackProgress(inProgress = true);
-    final codeUnits = await exportTransactions();
+    final codeUnits = await exportTransactions(isEncrypted);
     await exportFile(codeUnits, data);
     callbackProgress(inProgress = false);
     callbackMessage(message = AppLocale.labels.success);
