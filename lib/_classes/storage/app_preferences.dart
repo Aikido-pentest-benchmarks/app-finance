@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppPreferences {
   static const String prefPrivacyPolicy = 'privacyPolicy';
   static const String prefDoEncrypt = 'doEncrypt';
+  static const String prefEncryptionKey = 'encryptionKey';
   static const String prefAccount = 'account';
   static const String prefBudget = 'budget';
   static const String prefCurrency = 'currency';
