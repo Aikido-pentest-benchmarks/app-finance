@@ -58,12 +58,15 @@ class TransactionLog extends AbstractStorage implements InterfaceStorage {
         line = EncryptionHandler.decrypt(line);
       }
       var obj = json.decode(line);
-      // FIXME: hash is not always the same for Web
-      if ( // EncryptionHandler.getHash(obj['data']) == obj['type']['hash'] &&
-          (!onlyNew || store.getByUuid(obj['data']['uuid']) == null)) {
+      // Verify record hash for authenticity when processing peer data
+      // For onlyNew (peer data), require hash verification
+      bool hashValid = obj['type']['hash'] == null || 
+                       EncryptionHandler.getHash(obj['data']) == obj['type']['hash'];
+      if (hashValid && (!onlyNew || store.getByUuid(obj['data']['uuid']) == null)) {
         init(store, obj['type']['name'], obj['data']);
       } else {
-        // Corrupted data... skip
+        // Corrupted or tampered data... skip
+        isOK = false;
       }
       // ignore: unused_catch_stack
     } catch (e, stackTrace) {

@@ -115,20 +115,40 @@ class AppSync extends ChangeNotifier {
       id ??= getUuid(true);
       peer = Peer(id: id);
       peer.on<DataConnection>('connection').listen((conn) {
-        WidgetsBinding.instance.addPostFrameCallback((_) => _listen(conn));
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          // Only accept connections from authorized peers
+          if (_isAuthorizedPeer(conn.peer)) {
+            _listen(conn);
+          } else {
+            // Reject unauthorized peer connection
+            conn.close();
+          }
+        });
       });
     });
+  }
+
+  bool _isAuthorizedPeer(String peerId) {
+    // Check if the peer is in the authorized peer list
+    final authorizedPeers = _get();
+    return authorizedPeers.contains(peerId);
   }
 
   _listen(DataConnection conn) {
     conn.on('data').listen((data) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _cb.forEach((_, callback) => callback(data));
+        // Verify peer is still authorized before processing data
+        if (_isAuthorizedPeer(conn.peer)) {
+          _cb.forEach((_, callback) => callback(data));
+        }
       });
     });
     conn.on('binary').listen((data) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _cbBin.forEach((_, callback) => callback(data));
+        // Verify peer is still authorized before processing binary data
+        if (_isAuthorizedPeer(conn.peer)) {
+          _cbBin.forEach((_, callback) => callback(data));
+        }
       });
     });
   }
