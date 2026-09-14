@@ -44,7 +44,22 @@ $ snapcraft whoami
 id: ...
 
 ## Export credentials for CI/CD
+# WARNING: The exported credential grants package publishing rights.
+# Protect it immediately with restrictive permissions and secure storage.
 $ snapcraft export-login --snaps=fingrom --acls package_access,package_push,package_update,package_release credentials.txt
+
+# Secure the credential file with owner-only read/write permissions
+$ chmod 600 credentials.txt
+
+# IMPORTANT: Transfer the credential to a secure secret store
+# (e.g., GitHub Secrets, password manager, encrypted vault).
+# For GitHub Actions, add it as a repository secret:
+# Settings -> Secrets and variables -> Actions -> New repository secret
+# Name: CREDENTIALS, Value: <paste content of credentials.txt>
+
+# Remove the plaintext file after secure storage
+$ shred -u credentials.txt  # Linux: securely overwrite and delete
+# or: rm credentials.txt    # fallback if shred is unavailable
 
 # Generate snapcraft.yaml
 $ snapcraft init
