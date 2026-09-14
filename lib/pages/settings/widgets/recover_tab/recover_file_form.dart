@@ -74,7 +74,7 @@ class RecoverFileFormState extends State<RecoverFileForm> {
           width: double.infinity,
           child: FloatingActionButton(
             heroTag: 'recover_tab_save',
-            onPressed: () => file.save(path.text),
+            onPressed: () => file.save(path.text, isEncrypted),
             tooltip: AppLocale.labels.saveTooltip,
             child: Text(AppLocale.labels.saveTooltip),
           ),

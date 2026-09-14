@@ -42,7 +42,7 @@ class WebDavProtocol extends AbstractProtocol implements InterfaceProtocol {
     if (client == null) {
       return;
     }
-    final codeUnits = await exportTransactions();
+    final codeUnits = await exportTransactions(data.isEncrypted);
     final Uint8List unit8List = Uint8List.fromList(codeUnits);
     callbackMessage(message = '');
     await client.write(data.path, unit8List).catchError((err) {
