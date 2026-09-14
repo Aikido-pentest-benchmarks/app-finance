@@ -26,6 +26,12 @@ class WebDavProtocol extends AbstractProtocol implements InterfaceProtocol {
       callbackMessage(message = AppLocale.labels.isRequired);
       return null;
     }
+    // Enforce HTTPS to protect credentials in transit
+    final uri = Uri.tryParse(data.link);
+    if (uri == null || uri.scheme.toLowerCase() != 'https') {
+      callbackMessage(message = AppLocale.labels.error('HTTPS is required for secure credential transmission'));
+      return null;
+    }
     callbackProgress(inProgress = true);
     Client? client = newClient(data.link, user: data.username, password: data.password);
     client = await client.ping().then((_) => client).onError((error, _) {
