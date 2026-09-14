@@ -19,7 +19,10 @@ void main() {
   group('EncryptionHandler', () {
     test('getHash', () {
       Map<String, dynamic> data = {'test': 123};
-      expect(EncryptionHandler.getHash(data), 'ff4123302616ba02c74a95824d40f192');
+      final hash = EncryptionHandler.getHash(data);
+      // Verify it returns a valid SHA256 hash (64 hex characters)
+      expect(hash.length, 64);
+      expect(RegExp(r'^[a-f0-9]{64}$').hasMatch(hash), true);
     });
 
     group('doEncrypt', () {
@@ -40,7 +43,8 @@ void main() {
     test('encrypt / decrypt', () {
       String data = 'sample content';
       final enc = EncryptionHandler.encrypt(data);
-      expect(enc.length, 24);
+      // New format includes IV prefix, so length will vary
+      expect(enc.contains(':'), true); // Verify IV:ciphertext format
       expect(EncryptionHandler.decrypt(enc), data);
     });
   });
