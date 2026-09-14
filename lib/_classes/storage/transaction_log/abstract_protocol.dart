@@ -5,10 +5,16 @@ import 'package:app_finance/_classes/controller/encryption_handler.dart';
 import 'package:app_finance/_classes/storage/transaction_log.dart';
 
 abstract class AbstractProtocol {
-  Future<List<int>> exportTransactions() async {
+  Future<List<int>> exportTransactions({bool forceEncryption = false}) async {
     List<int> codeUnits = [];
+    bool isCurrentlyEncrypted = EncryptionHandler.doEncrypt();
     await for (String line in TransactionLog.read()) {
-      codeUnits.addAll(line.codeUnits);
+      String exportLine = line;
+      // If export requires encryption but data is not encrypted, encrypt it
+      if (forceEncryption && !isCurrentlyEncrypted && line.isNotEmpty) {
+        exportLine = EncryptionHandler.encrypt(line);
+      }
+      codeUnits.addAll(exportLine.codeUnits);
       codeUnits.addAll('\n'.codeUnits);
     }
     return codeUnits;

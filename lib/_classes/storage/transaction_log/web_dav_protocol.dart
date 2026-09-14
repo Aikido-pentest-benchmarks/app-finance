@@ -42,7 +42,8 @@ class WebDavProtocol extends AbstractProtocol implements InterfaceProtocol {
     if (client == null) {
       return;
     }
-    final codeUnits = await exportTransactions();
+    // Force encryption for external WebDAV storage to protect sensitive financial data
+    final codeUnits = await exportTransactions(forceEncryption: true);
     final Uint8List unit8List = Uint8List.fromList(codeUnits);
     callbackMessage(message = '');
     await client.write(data.path, unit8List).catchError((err) {
@@ -69,7 +70,8 @@ class WebDavProtocol extends AbstractProtocol implements InterfaceProtocol {
     if (isCleaned) {
       clearTransactions();
     }
-    importTransactions(content, isEncrypted);
+    // WebDAV data is always encrypted for security, so force isEncrypted to true
+    importTransactions(content, true);
     callbackProgress(inProgress = false);
     if (message == '') {
       callbackMessage(message = AppLocale.labels.success);
