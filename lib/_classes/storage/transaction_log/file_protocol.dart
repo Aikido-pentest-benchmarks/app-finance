@@ -28,7 +28,8 @@ class FileProtocol extends AbstractProtocol with FileImportMixin, FileExportMixi
       return;
     }
     callbackProgress(inProgress = true);
-    final codeUnits = await exportTransactions();
+    // Force encryption for file exports to protect sensitive financial data
+    final codeUnits = await exportTransactions(forceEncryption: true);
     await exportFile(codeUnits, data);
     callbackProgress(inProgress = false);
     callbackMessage(message = AppLocale.labels.success);
@@ -42,7 +43,8 @@ class FileProtocol extends AbstractProtocol with FileImportMixin, FileExportMixi
       if (isCleaned) {
         clearTransactions();
       }
-      importTransactions(content.codeUnits, isEncrypted);
+      // File exports are always encrypted for security, so force isEncrypted to true
+      importTransactions(content.codeUnits, true);
       callbackMessage(message = AppLocale.labels.success);
     } else {
       callbackMessage(message = AppLocale.labels.missingContent);
