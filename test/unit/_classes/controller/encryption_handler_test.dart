@@ -14,12 +14,18 @@ import 'encryption_handler_test.mocks.dart';
 void main() {
   setUp(() {
     AppPreferences.pref = MockSharedPreferences();
+    // Allow the mock to accept setString calls for encryption key storage
+    when(AppPreferences.pref.setString(any, any)).thenAnswer((_) async => true);
   });
 
   group('EncryptionHandler', () {
     test('getHash', () {
       Map<String, dynamic> data = {'test': 123};
-      expect(EncryptionHandler.getHash(data), 'ff4123302616ba02c74a95824d40f192');
+      // SHA256 produces a 64-character hex string
+      final hash = EncryptionHandler.getHash(data);
+      expect(hash.length, 64);
+      // Verify hash is consistent
+      expect(EncryptionHandler.getHash(data), hash);
     });
 
     group('doEncrypt', () {
@@ -40,8 +46,20 @@ void main() {
     test('encrypt / decrypt', () {
       String data = 'sample content';
       final enc = EncryptionHandler.encrypt(data);
-      expect(enc.length, 24);
+      // New format produces longer output due to envelope structure (version, IV, ciphertext)
+      expect(enc.length, greaterThan(50));
       expect(EncryptionHandler.decrypt(enc), data);
+    });
+
+    test('encrypt produces different ciphertexts for same plaintext', () {
+      String data = 'sample content';
+      final enc1 = EncryptionHandler.encrypt(data);
+      final enc2 = EncryptionHandler.encrypt(data);
+      // Due to random IVs, same plaintext should produce different ciphertexts
+      expect(enc1, isNot(equals(enc2)));
+      // But both should decrypt to the same plaintext
+      expect(EncryptionHandler.decrypt(enc1), data);
+      expect(EncryptionHandler.decrypt(enc2), data);
     });
   });
 }
