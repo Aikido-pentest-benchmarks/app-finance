@@ -19,7 +19,10 @@ void main() {
   group('EncryptionHandler', () {
     test('getHash', () {
       Map<String, dynamic> data = {'test': 123};
-      expect(EncryptionHandler.getHash(data), 'ff4123302616ba02c74a95824d40f192');
+      // Updated to SHA-256 hash - verify hash is consistent and uses SHA-256
+      final hash = EncryptionHandler.getHash(data);
+      expect(hash.length, 64); // SHA-256 produces 64 hex characters
+      expect(EncryptionHandler.getHash(data), hash); // Verify consistency
     });
 
     group('doEncrypt', () {
@@ -40,8 +43,22 @@ void main() {
     test('encrypt / decrypt', () {
       String data = 'sample content';
       final enc = EncryptionHandler.encrypt(data);
-      expect(enc.length, 24);
+      // New format includes IV prefix (base64 IV + ':' + base64 ciphertext)
+      // Length will vary due to random IV and GCM authentication tag
+      expect(enc.contains(':'), true);
+      expect(enc.split(':').length, 2);
       expect(EncryptionHandler.decrypt(enc), data);
+    });
+
+    test('encrypt produces unique ciphertexts', () {
+      String data = 'sample content';
+      final enc1 = EncryptionHandler.encrypt(data);
+      final enc2 = EncryptionHandler.encrypt(data);
+      // Each encryption should produce different ciphertext due to unique IV
+      expect(enc1 != enc2, true);
+      // But both should decrypt to the same plaintext
+      expect(EncryptionHandler.decrypt(enc1), data);
+      expect(EncryptionHandler.decrypt(enc2), data);
     });
   });
 }

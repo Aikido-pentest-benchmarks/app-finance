@@ -117,7 +117,7 @@ class SecurityPageState extends AbstractPageState<SecurityPage> {
       return;
     }
     final key = AppPreferences.get(AppPreferences.prefRecoveryKey) ?? '';
-    if (EncryptionHandler.getHashString(password.text) != key) {
+    if (!EncryptionHandler.verifyPasswordHash(password.text, key)) {
       NotificationBar.showSnackBar(context, AppLocale.labels.securePasswordNotMatch, true);
       return;
     }
