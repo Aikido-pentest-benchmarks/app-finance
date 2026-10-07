@@ -115,9 +115,22 @@ class AppSync extends ChangeNotifier {
       id ??= getUuid(true);
       peer = Peer(id: id);
       peer.on<DataConnection>('connection').listen((conn) {
-        WidgetsBinding.instance.addPostFrameCallback((_) => _listen(conn));
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          // Only accept connections from approved peers
+          if (_isApprovedPeer(conn.peer)) {
+            _listen(conn);
+          } else {
+            // Reject unapproved inbound connection
+            conn.close();
+          }
+        });
       });
     });
+  }
+
+  bool _isApprovedPeer(String peerId) {
+    final approvedPeers = _get();
+    return approvedPeers.contains(peerId);
   }
 
   _listen(DataConnection conn) {
